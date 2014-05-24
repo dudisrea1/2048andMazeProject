@@ -73,7 +73,9 @@ public class Presenter implements Observer {
 				break;
 			// Sets the client server properties
 			case 17:
+				//model.CloseConnectionToServer();
 				model.setSolverServerProperties((ServerProperties)arg1);
+				//model.OpenConnectionToServer();
 				break;
 			// Changes the model to work with Specific game model.
 			// Set the model to work as Maze
@@ -111,7 +113,7 @@ public class Presenter implements Observer {
 				break;
 			// Hint needed
 			case 55:
-				try {
+				/*try {
 					if (model.CanAskServer() && !model.CheckEndOfGame()) {
 						Integer[] bestMove = model.GetBestMove();
 						if (bestMove != null && bestMove[0] != null
@@ -124,6 +126,13 @@ public class Presenter implements Observer {
 						ui.setStatusLabel("No more moves");
 				} catch (Exception e) {
 					e.printStackTrace();
+				}*/
+				if(!model.CheckEndOfGame())
+				//model.DoBestMoves((int)arg1);
+					model.DoBestMoves(2);
+				else
+				{
+					ui.EndOfGame();
 				}
 				break;
 			default:
@@ -144,6 +153,7 @@ public class Presenter implements Observer {
 				ui.displayBoard(model.getBoard());
 				ui.displayScore(model.getScore());
 				ui.displayBestScore(model.getBestScore());
+				
 				if (model.CheckEndOfGame()) {
 					ui.EndOfGame();
 				}
