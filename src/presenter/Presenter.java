@@ -1,5 +1,7 @@
 package presenter;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -16,6 +18,7 @@ public class Presenter implements Observer {
 	ModelMovements mvGeneral, mv2048, mvMaze;
 	Game2048Model g2048;
 	GameMazeModel gMaze;
+	Socket serverSocket = null;
 
 	/**
 	 * Constructor that builds the presenter
@@ -31,7 +34,6 @@ public class Presenter implements Observer {
 		mv2048 = new ModelMovements(g2048);
 		gMaze = new GameMazeModel();
 		mvMaze = new ModelMovements(gMaze);
-
 	}
 
 	/**
@@ -42,13 +44,16 @@ public class Presenter implements Observer {
 	public void update(Observable arg0, Object arg1) {
 		if (arg0 == ui) {
 			switch (ui.getUserCommand()) {
-			// Starts a new Game
+			case -1:
+				if (serverSocket != null && !serverSocket.isClosed()) {
+					try {
+						serverSocket.close();
+					} catch (IOException e1) {
+					}
+				}
+				// Starts a new Game
 			case 9:
 				model.InitBoard();
-				ui.displayBoard(model.getBoardArr());
-				ui.displayScore(model.getScore());
-				ui.displayBestScore(model.getBestScore());
-				ui.setUndo(model.getMoves().size() != 0);
 				break;
 			// Undo Move
 			case 10:
@@ -61,7 +66,7 @@ public class Presenter implements Observer {
 			// Loads an existing model if given path
 			case 12:
 				if (model.Load((String) arg1)) {
-					ui.displayBoard(model.getBoardArr());
+					ui.displayBoard(model.getBoard());
 					ui.displayScore(model.getScore());
 					ui.displayBestScore(model.getBestScore());
 					ui.setUndo(model.getMoves().size() != 0);
@@ -73,7 +78,24 @@ public class Presenter implements Observer {
 				break;
 			// Sets the client server properties
 			case 17:
-				model.setSolverServerProperties((ServerProperties)arg1);
+				final ServerProperties sp = (ServerProperties) arg1;
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							if(serverSocket!=null)
+								serverSocket.close();
+							serverSocket = new Socket(sp
+									.getSolverServerAddress(), sp
+									.getSolverServerPort());
+							model.setSolverServerProperties(sp);
+						} catch (IOException e) {
+							if (!ui.isShellDisposed())
+								ui.displayError("Failed to connect to Solver server");
+						}
+
+					}
+				}).start();
 				break;
 			// Changes the model to work with Specific game model.
 			// Set the model to work as Maze
@@ -87,9 +109,6 @@ public class Presenter implements Observer {
 						ui.setUndo(true);
 					else
 						ui.setUndo(false);
-					ui.displayBoard(model.getBoardArr());
-					ui.displayScore(model.getScore());
-					ui.displayBestScore(model.getBestScore());
 				}
 				break;
 			// Changes the model to work with Specific game model.
@@ -104,33 +123,14 @@ public class Presenter implements Observer {
 						ui.setUndo(true);
 					else
 						ui.setUndo(false);
-					ui.displayBoard(model.getBoardArr());
-					ui.displayScore(model.getScore());
-					ui.displayBestScore(model.getBestScore());
 				}
 				break;
 			// Hint needed
 			case 55:
-				try {
-					if (model.CanAskServer() && !model.CheckEndOfGame()) {
-						Integer[] bestMove = model.GetBestMove();
-						if (bestMove != null && bestMove[0] != null
-								&& bestMove[1] != null && !ui.isShellDisposed()) {
-							ui.setStatusLabel(model.ArrayToString(bestMove));
-							model.movement(bestMove[0], bestMove[1]);
-						}
-					} else if (model.CheckEndOfGame() || !ui.isShellDisposed())
-						ui.setStatusLabel("No more moves");
-				} catch (Exception e) {
-					e.printStackTrace();
+				if (!ui.isShellDisposed() && model.CanAskServer()
+						&& !model.CheckEndOfGame()) {
+					model.ExecuteMoves((int) arg1, serverSocket);
 				}
-//				if(!model.CheckEndOfGame())
-//				//model.DoBestMoves((int)arg1);
-//					model.DoBestMoves(2);
-//				else
-//				{
-//					ui.EndOfGame();
-//				}
 				break;
 			default:
 				if (mvGeneral != null)
@@ -140,20 +140,20 @@ public class Presenter implements Observer {
 			// If the notification received from other source (model) will
 			// redisplay the board, score, bestscore, checks if there's no more
 			// moves and end the game if true
-		} else {// if (arg0 instanceof Game2048Model) {
+		} else {
 			if (!ui.isShellDisposed()) {
 
-				if (!model.GetErrorMessage().isEmpty()) // if model return an error -
-													// prompt it on view
-					ui.displayError(model.GetErrorMessage());
-
-				ui.displayBoard(model.getBoardArr());
+//				if (!model.GetErrorMessage().isEmpty()) // if model return an
+//														// error -
+//					// prompt it on view
+//					ui.displayError(model.GetErrorMessage());
+				ui.displayBoard(model.getBoard());
 				ui.displayScore(model.getScore());
 				ui.displayBestScore(model.getBestScore());
 				if (model.CheckEndOfGame()) {
 					ui.EndOfGame();
 				}
-				if(model.getMoves().size()==0)
+				if (model.getMoves().size() == 0)
 					ui.disableUndo();
 			}
 		}

@@ -1,9 +1,6 @@
 package Screens;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
+import helper.ViewUtilities;
 import model.ServerProperties;
 
 import org.eclipse.swt.SWT;
@@ -18,19 +15,19 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 public class OptionScreen extends Dialog {
 	private String difficulty = "Normal", SelectedGame = "Empty",
 			SolverServerAddress = "127.0.0.1";
-	private boolean sound = false, serverEnabled = false;
+	private boolean sound = false, serverEnabled = false, changed = false;
 	private int methodSelection = 0, portNumber = 5001, depth = 6;
 	private Group GamesGroup, DifficultyGroup, SoundGroup, ServerGroup;
 	private Button GameMaze_btn, Game2048_btn, normal, hard, on, off, OK_btn;
 	private Text SolverServerAddress_text, SolverServerDepth, SolverServerPort;
 	private Combo solverMethod;
+	private Shell optinsScreen_shell;
 
 	public OptionScreen(Shell parent) {
 		super(parent, 0);
@@ -60,10 +57,10 @@ public class OptionScreen extends Dialog {
 	 * @return String that represent the chosen game
 	 */
 	public String open() {
-		final Shell optinsScreen_shell = new Shell(
-				Display.getCurrent(),
-				(SWT.CLOSE | SWT.TITLE | SWT.BORDER | SWT.APPLICATION_MODAL | SWT.RESIZE)
-						& (~SWT.RESIZE));
+		changed = false;
+		optinsScreen_shell = new Shell(Display.getCurrent(), (SWT.CLOSE
+				| SWT.TITLE | SWT.BORDER | SWT.APPLICATION_MODAL | SWT.RESIZE)
+				& (~SWT.RESIZE));
 		optinsScreen_shell.setLayout(new GridLayout(1, true));
 		optinsScreen_shell.setText("Options");
 
@@ -195,71 +192,9 @@ public class OptionScreen extends Dialog {
 				} else {
 					setDifficulty("Hard");
 				}
-				String missing = "";
-				if (SolverServerAddress_text.getText().isEmpty()) {
-					SolverServerAddress = "";
-					missing += ", IP Address";
-				}
-				if (SolverServerPort.getText().isEmpty())
-					missing += ", Port";
-				if (SolverServerDepth.getText().isEmpty())
-					missing += ", Depth";
-
-				if (SelectedGame.equals("Maze")) {
-					serverEnabled = false;
-					displayMessage(
-							optinsScreen_shell,
-							"Maze game",
-							"Hints are not supported in Maze Game, Good luck :)",
-							SWT.ICON_INFORMATION);
-					optinsScreen_shell.dispose();
-				}
-
-				if (!optinsScreen_shell.isDisposed() && !missing.isEmpty()) {
-					serverEnabled = false;
-					displayMessage(
-							optinsScreen_shell,
-							"Missing Server Parameters",
-							"Hint will be disabled since "
-									+ missing.substring(2)
-									+ " parameters are missing.",
-							SWT.ICON_INFORMATION);
-					optinsScreen_shell.dispose();
-				}
-
-				if (!optinsScreen_shell.isDisposed()) {
-					String invalid = "";
-					methodSelection = solverMethod.getSelectionIndex();
-					if (VerifyAddress(SolverServerAddress_text.getText()))
-						SolverServerAddress = SolverServerAddress_text
-								.getText();
-					else
-						invalid += "Invalid IP address, must be X.X.X.X where x between 0-255.\n";
-					portNumber = verifyNumberInRange(
-							SolverServerPort.getText(), 1, 65535);
-					if (portNumber == -1)
-						invalid += "Invalid Port number, must be number between 1-65535.\n";
-					depth = verifyNumberInRange(SolverServerDepth.getText(), 1,
-							15);
-					if (depth == -1)
-						invalid += "Invalid Depth chosen, must be a number between 1-15.";
-					if (invalid.isEmpty()) {
-						if (depth >= 7)
-							displayMessage(
-									optinsScreen_shell,
-									"Depth is high",
-									"You choose depth "
-											+ depth
-											+ ", this is a high number and will take time to calculate each step ",
-									SWT.ICON_INFORMATION);
-						serverEnabled = true;
-						optinsScreen_shell.dispose();
-					}
-
-					else
-						displayMessage(optinsScreen_shell,
-								"Invalid Parameters given", invalid, SWT.ERROR);
-				}
+				HandleMissingValues();
+				HandleInvalidValues();
+				changed = true;
 			}
 
 			@Override
@@ -278,6 +213,74 @@ public class OptionScreen extends Dialog {
 			}
 		}
 		return SelectedGame;
+	}
+
+	protected void HandleInvalidValues() {
+		if (!optinsScreen_shell.isDisposed()) {
+			String invalid = "";
+			methodSelection = solverMethod.getSelectionIndex();
+			if (ViewUtilities.VerifyAddress(SolverServerAddress_text.getText()))
+				SolverServerAddress = SolverServerAddress_text.getText();
+			else
+				invalid += "Invalid IP address, must be X.X.X.X where x between 0-255.\n";
+			portNumber = ViewUtilities.verifyNumberInRange(
+					SolverServerPort.getText(), 1, 65535);
+			if (portNumber == -1)
+				invalid += "Invalid Port number, must be number between 1-65535.\n";
+			depth = ViewUtilities.verifyNumberInRange(
+					SolverServerDepth.getText(), 1, 15);
+			if (depth == -1)
+				invalid += "Invalid Depth chosen, must be a number between 1-15.";
+			if (invalid.isEmpty()) {
+				if (depth > 7)
+					ViewUtilities
+							.displayMessage(
+									Display.getDefault(),
+									optinsScreen_shell,
+									"Depth is high",
+									"You choose depth "
+											+ depth
+											+ ", this is a high number and will take time to calculate each step ",
+									SWT.ICON_INFORMATION);
+				serverEnabled = true;
+				optinsScreen_shell.dispose();
+			}
+
+			else
+				ViewUtilities.displayMessage(Display.getDefault(),
+						optinsScreen_shell, "Invalid Parameters given",
+						invalid, SWT.ERROR);
+		}
+	}
+
+	protected void HandleMissingValues() {
+		String missing = "";
+		if (SolverServerAddress_text.getText().isEmpty()) {
+			SolverServerAddress = "";
+			missing += ", IP Address";
+		}
+		if (SolverServerPort.getText().isEmpty())
+			missing += ", Port";
+		if (SolverServerDepth.getText().isEmpty())
+			missing += ", Depth";
+
+		if (SelectedGame.equals("Maze")) {
+			serverEnabled = false;
+			ViewUtilities.displayMessage(Display.getDefault(),
+					optinsScreen_shell, "Maze game",
+					"Hints are not supported in Maze Game, Good luck :)",
+					SWT.ICON_INFORMATION);
+			optinsScreen_shell.dispose();
+		}
+
+		if (!optinsScreen_shell.isDisposed() && !missing.isEmpty()) {
+			serverEnabled = false;
+			ViewUtilities.displayMessage(Display.getDefault(),
+					optinsScreen_shell, "Missing Server Parameters",
+					"Hint will be disabled since " + missing.substring(2)
+							+ " parameters are missing.", SWT.ICON_INFORMATION);
+			optinsScreen_shell.dispose();
+		}
 	}
 
 	/**
@@ -356,79 +359,6 @@ public class OptionScreen extends Dialog {
 	}
 
 	/**
-	 * Verifies that the given string is a valid number - contains only numbers
-	 * and between the range of min to max
-	 * 
-	 * @param number
-	 *            - the string that needs to be converted to number
-	 * @param min
-	 *            - the lowest possible value (included)
-	 * @param max
-	 *            - the highest possible value (included)
-	 * @return the String as int data type, -1 if the string is not a valid
-	 *         number
-	 */
-
-	private int verifyNumberInRange(String number, int min, int max) {
-		char[] chars = new char[number.length()];
-		number.getChars(0, chars.length, chars, 0);
-		for (int i = 0; i < chars.length; i++) {
-			if (!('0' <= chars[i] && chars[i] <= '9')) {
-				return -1;
-			}
-		}
-		int tmpNumber = Integer.parseInt(number);
-		if (tmpNumber >= min && tmpNumber <= max)
-			return tmpNumber;
-		return -1;
-	}
-
-	/**
-	 * Displays an message box based on given string and event type
-	 * 
-	 * @param shell
-	 * @param string
-	 * @param event
-	 *            ie, event can be SWT.ERROR or SWT.ICON_INFORMATION
-	 */
-	public void displayMessage(Shell shell, String text, String message,
-			int event) {
-		MessageBox mb = new MessageBox(shell, event);
-		mb.setText(text);
-		mb.setMessage(message);
-		mb.open();
-	}
-
-	/**
-	 * Returns true if the string input in address is a valid IPv4 or IPv6
-	 * 
-	 * @param IP
-	 *            - the IP address to verify
-	 * @return boolean
-	 */
-	private boolean VerifyAddress(String ipAddress) {
-		Pattern VALID_IPV4_PATTERN = null;
-		Pattern VALID_IPV6_PATTERN = null;
-		String ipv4Pattern = "(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
-		String ipv6Pattern = "([0-9a-f]{1,4}:){7}([0-9a-f]){1,4}";
-
-		try {
-			VALID_IPV4_PATTERN = Pattern.compile(ipv4Pattern,
-					Pattern.CASE_INSENSITIVE);
-			VALID_IPV6_PATTERN = Pattern.compile(ipv6Pattern,
-					Pattern.CASE_INSENSITIVE);
-		} catch (PatternSyntaxException e) {
-			e.printStackTrace();
-		}
-		Matcher m1 = VALID_IPV4_PATTERN.matcher(ipAddress);
-		if (m1.matches()) {
-			return true;
-		}
-		Matcher m2 = VALID_IPV6_PATTERN.matcher(ipAddress);
-		return m2.matches();
-	}
-
-	/**
 	 * Holds the flag regarding server solvement
 	 * 
 	 * @return true if it has all needed parameters - valid IP,Port,Method and
@@ -441,6 +371,10 @@ public class OptionScreen extends Dialog {
 	public ServerProperties getServerProperties() {
 		return new ServerProperties(SolverServerAddress, portNumber,
 				methodSelection, depth);
+	}
+
+	public boolean Changed() {
+		return changed;
 	}
 
 }

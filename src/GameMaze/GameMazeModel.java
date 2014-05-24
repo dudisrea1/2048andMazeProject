@@ -1,5 +1,6 @@
 package GameMaze;
 
+import java.net.Socket;
 import java.util.Observable;
 import java.util.Stack;
 
@@ -468,22 +469,28 @@ public class GameMazeModel extends Observable implements Model {
 	}
 
 	@Override
-	public Integer[] GetBestMove() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public boolean CanAskServer() {
-		if(sp == null)
+		if (sp == null)
 			return false;
 		return true;
 	}
 
 	@Override
-	public int[][] getBoardArr() {
+	public Integer[] GetBestMove(Socket myServer) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public void ExecuteMoves(int arg1, Socket myServer) {
+		// TODO Auto-generated method stub
+
+	}
+
+//	@Override
+//	public int[][] getBoard() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 
 }

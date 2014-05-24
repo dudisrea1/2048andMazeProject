@@ -1,5 +1,6 @@
 package model;
 
+import java.net.Socket;
 import java.util.Stack;
 
 public interface Model {
@@ -116,7 +117,7 @@ public interface Model {
 	 */
 	void setDifficulty(String arg1);
 
-	Integer[] GetBestMove();
+	Integer[] GetBestMove(Socket myServer);
 	
 	String GetErrorMessage();
 
@@ -128,5 +129,7 @@ public interface Model {
 
 	boolean CanAskServer();
 
-	int[][] getBoardArr();
+//	int[][] getBoardArr();
+
+	void ExecuteMoves(final int arg1,final Socket myServer);
 }

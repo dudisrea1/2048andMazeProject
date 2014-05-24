@@ -20,8 +20,7 @@ public class Game2048Model extends Observable implements Model, Serializable {
 	private Board2048 board;
 	private int bestscore = 0;
 	public Stack<Board2048> undo;
-	private String difficulty = "Normal",
-			ErrorMessage = "";
+	private String difficulty = "Normal", ErrorMessage = "";
 	private ServerProperties sp = null;
 	private boolean gameover = false;
 	private Game2048XMLManager Game2048ModelXMLManager = new Game2048XMLManager();
@@ -605,28 +604,19 @@ public class Game2048Model extends Observable implements Model, Serializable {
 	}
 
 	@Override
-	public Integer[] GetBestMove() {
+	public Integer[] GetBestMove(Socket myServer) {
 		try {
-			System.out.println("client side");
-			Socket myServer = new Socket(sp.getSolverServerAddress(), sp.getSolverServerPort());
-			System.out.println("connected to server");
-
 			ObjectOutputStream out2server = new ObjectOutputStream(
 					myServer.getOutputStream());
 			ObjectInputStream inFromServer = new ObjectInputStream(
 					myServer.getInputStream());
 
-			System.out.println("sending to server: ");
-			out2server.writeObject(new ClientRequest(getBoards(), sp.getSolverServerDepth(),
-					sp.getSolverServerMethod(), this));
+			out2server.writeObject(new ClientRequest(getBoards(), sp
+					.getSolverServerDepth(), sp.getSolverServerMethod(), this));
 			out2server.flush();
 			Integer[] movement = (Integer[]) inFromServer.readObject();
 			System.out.println(movement + "get: " + movement[0] + ","
 					+ movement[1]);
-
-			out2server.close();
-			myServer.close();
-
 			return movement;
 		} catch (Exception e) {
 			ErrorMessage = e.getMessage();
@@ -637,12 +627,12 @@ public class Game2048Model extends Observable implements Model, Serializable {
 		}
 	}
 
-	public boolean CanAskServer(){
-		if(sp == null)
+	public boolean CanAskServer() {
+		if (sp == null)
 			return false;
 		return true;
 	}
-	
+
 	@Override
 	public String GetErrorMessage() {
 		return ErrorMessage;
@@ -654,7 +644,21 @@ public class Game2048Model extends Observable implements Model, Serializable {
 	}
 
 	@Override
-	public int[][] getBoardArr() {
-		return board.getBoard();
+	public void ExecuteMoves(final int arg1, final Socket myServer) {
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				for (int i = 0; i < arg1 && !CheckEndOfGame()
+						&& !myServer.isClosed(); i++) {
+					System.out.println(!myServer.isClosed());
+					Integer[] bestMove = GetBestMove(myServer);
+					if (bestMove != null && bestMove[0] != null
+							&& bestMove[1] != null) {
+						movement(bestMove[0], bestMove[1]);
+					}
+				}
+			}
+		}).start();
 	}
 }

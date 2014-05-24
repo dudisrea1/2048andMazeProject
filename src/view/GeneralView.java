@@ -1,5 +1,7 @@
 package view;
 
+import helper.ViewUtilities;
+
 import java.util.HashMap;
 import java.util.Observable;
 
@@ -10,13 +12,13 @@ import javax.sound.sampled.Clip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.FontMetrics;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
@@ -31,7 +33,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
@@ -55,30 +56,43 @@ public class GeneralView extends Observable implements View, Runnable {
 	boolean newGame = false, keyPressed = false, optionScreenOpened = false;
 	private Listener mouseDown2048, mouseUp2048, keyUp2048, keyDown2048,
 			keyDownMaze, keyUpMaze;
-	private OptionScreen optinsScr;
+	private OptionScreen optionsScr;
 	private String SelectedGame = "Empty", Difficulty = "Normal";
 	private HashMap<Integer, Integer> movementMap = new HashMap<Integer, Integer>();
 	private Text numberOfSteps;
 
 	@Override
-	public void displayBoard(int[][] data) {
-		board.drawBoard(data);
-		if (optinsScr.isSound()) {
-			new Thread(new Runnable() {
+	public void displayBoard(final int[][] data) {
+		if (!shell.isDisposed()) {
+			display.asyncExec(new Runnable() {
+
+				@Override
 				public void run() {
 					try {
-						Clip clip = AudioSystem.getClip();
-						AudioInputStream inputStream = AudioSystem.getAudioInputStream(ClassLoader
-								.getSystemResourceAsStream("Sounds/nav.wav"));
-						clip.open(inputStream);
-						clip.start();
+						board.drawBoard(data);
+						if (optionsScr.isSound()) {
+							new Thread(new Runnable() {
+								public void run() {
+									try {
+										Clip clip = AudioSystem.getClip();
+										AudioInputStream inputStream = AudioSystem
+												.getAudioInputStream(ClassLoader
+														.getSystemResourceAsStream("Sounds/nav.wav"));
+										clip.open(inputStream);
+										clip.start();
+									} catch (Exception e) {
+										displayError(e.getMessage());
+									}
+								}
+							}).start();
+						}
+						board.setFocus();
 					} catch (Exception e) {
-						displayError(e.getMessage());
 					}
+					;
 				}
-			}).start();
+			});
 		}
-		board.setFocus();
 	}
 
 	@Override
@@ -86,37 +100,38 @@ public class GeneralView extends Observable implements View, Runnable {
 		return userCommand;
 	}
 
-	private void setUserCommand(final int cmd) {
+	private void setUserCommand(int cmd) {
+		userCommand = cmd;
+		updateObservers();
+	}
+
+	private void setUserCommand(int cmd, Object args) {
+		userCommand = cmd;
+		updateObservers(args);
+	}
+
+	@Override
+	public void displayScore(final int score) {
 		display.asyncExec(new Runnable() {
 
 			@Override
 			public void run() {
-				userCommand = cmd;
-				updateObservers();
+				scorevalue.setText("Your score\t" + score);
 			}
 		});
 
 	}
 
-	private void setUserCommand(final int cmd, final Object args) {
+	@Override
+	public void displayBestScore(final int score) {
 		display.asyncExec(new Runnable() {
 
 			@Override
 			public void run() {
-				userCommand = cmd;
-				updateObservers(args);
+				bestscorevalue.setText("Your best score\t" + score);
 			}
 		});
-	}
 
-	@Override
-	public void displayScore(int score) {
-		scorevalue.setText("Your score\t" + score);
-	}
-
-	@Override
-	public void displayBestScore(int score) {
-		bestscorevalue.setText("Your best score\t" + score);
 	}
 
 	private void mouseMovement() {
@@ -281,8 +296,8 @@ public class GeneralView extends Observable implements View, Runnable {
 		display = Display.getDefault();
 		shell = new Shell(display);
 		shell.setLayout(new GridLayout(4, false));
-		shell.setSize(550, 530);
-		shell.setMinimumSize(550, 530);
+		shell.setSize(580, 530);
+		shell.setMinimumSize(580, 530);
 		shell.setText("Game 2048");
 		movementMap.put(0, 0);
 		movementMap.put(SWT.ARROW_UP, 1);
@@ -353,21 +368,13 @@ public class GeneralView extends Observable implements View, Runnable {
 		helpGetHelpItem.addSelectionListener(new HelpItemListener());
 		fileOptionsItem.addSelectionListener(new fileOptionsItemListener());
 
-		optinsScr = new OptionScreen(shell);
+		optionsScr = new OptionScreen(shell);
 
 		shell.setMenuBar(menuBar);
 		shell.open();
 	}
 
 	private void initButtonsandLabels() {
-
-		// GridData scoresGrid = new GridData(SWT.FILL, SWT.FILL, true, false,
-		// 2,
-		// 1);
-		// GridData buttonGrid = new GridData(SWT.FILL, SWT.FILL, false, false,
-		// 1,
-		// 1);
-
 		GridData scoresGrid = new GridData(SWT.FILL, SWT.FILL, false, false, 2,
 				1);
 		GridData buttonGrid = new GridData(SWT.FILL, SWT.FILL, false, false, 2,
@@ -417,14 +424,27 @@ public class GeneralView extends Observable implements View, Runnable {
 		loadGame.addSelectionListener(new LoadItemListener());
 		loadGame.setEnabled(true);
 
-		Composite hintsGrp = new Composite(shell,SWT.NONE);
+		Composite hintsGrp = new Composite(shell, SWT.NONE);
 		hintsGrp.setLayout(new GridLayout(2, true));
-		    
+
 		numberOfSteps = new Text(hintsGrp, SWT.BORDER);
 		numberOfSteps.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false,
 				false, 1, 1));
 		numberOfSteps.setText("");
 		numberOfSteps.setToolTipText("How many steps to calculate?");
+		numberOfSteps.addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyReleased(KeyEvent arg0) {
+				if (arg0.keyCode == SWT.CR || arg0.keyCode == SWT.KEYPAD_CR) {
+					new HintItemListener().widgetSelected(null);
+				}
+			}
+
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+			}
+		});
 
 		hint = new Button(hintsGrp, SWT.BUTTON1);
 		hint.setText("Hints");
@@ -455,19 +475,21 @@ public class GeneralView extends Observable implements View, Runnable {
 
 	@Override
 	public void EndOfGame() {
-		newGame = false;
-		MessageBox mb = new MessageBox(shell, SWT.ICON_INFORMATION);
-		mb.setText("Game Ended");
-		mb.setMessage("No more moves left.\n" + scorevalue.getText());
-		mb.open();
+		display.syncExec(new Runnable() {
+
+			@Override
+			public void run() {
+				ViewUtilities.displayMessage(display, shell, "Game Ended",
+						"No more moves left.\n" + scorevalue.getText(),
+						SWT.ICON_INFORMATION);
+			}
+		});
 	}
 
 	@Override
-	public void displayError(String string) {
-		MessageBox mb = new MessageBox(shell, SWT.ERROR);
-		mb.setText("Error");
-		mb.setMessage(string);
-		mb.open();
+	public void displayError(final String string) {
+		ViewUtilities
+				.displayMessage(display, shell, "Error", string, SWT.ERROR);
 	}
 
 	private void updateObservers() {
@@ -480,7 +502,8 @@ public class GeneralView extends Observable implements View, Runnable {
 	private void updateObservers(Object args) {
 		setChanged();
 		notifyObservers(args);
-		board.setFocus();
+		if (!shell.isDisposed())
+			board.setFocus();
 	}
 
 	@Override
@@ -496,9 +519,9 @@ public class GeneralView extends Observable implements View, Runnable {
 
 	private void GameSelection() {
 		optionScreenOpened = true;
-		SelectedGame = optinsScr.open();
+		SelectedGame = optionsScr.open();
 		optionScreenOpened = false;
-		if (!SelectedGame.equals("Empty")) {
+		if (!SelectedGame.equals("Empty") && optionsScr.Changed()) {
 			switch (SelectedGame) {
 			case "Maze":
 				if (board instanceof Game2048Board || board == null) {
@@ -529,11 +552,11 @@ public class GeneralView extends Observable implements View, Runnable {
 				}
 				break;
 			}
-			Difficulty = optinsScr.getDifficulty();
+			Difficulty = optionsScr.getDifficulty();
 			setUserCommand(15, Difficulty);
-			if (optinsScr.serverEnabled()) {
-				setUserCommand(17, optinsScr.getServerProperties());
-				optinsScr.getServerProperties().Print();
+			if (optionsScr.serverEnabled()) {
+				setUserCommand(17, optionsScr.getServerProperties());
+				optionsScr.getServerProperties().Print();
 				hint.setEnabled(true);
 			} else
 				hint.setEnabled(false);
@@ -661,8 +684,20 @@ public class GeneralView extends Observable implements View, Runnable {
 
 	class HintItemListener implements SelectionListener {
 		public void widgetSelected(SelectionEvent event) {
-			setUserCommand(55);
-			setUndo(true);
+			if (hint.isEnabled()) {
+				if (!numberOfSteps.getText().isEmpty()) {
+					int cmd = ViewUtilities.verifyNumberInRange(
+							numberOfSteps.getText(), 0, Integer.MAX_VALUE);
+					if (cmd != -1) {
+						setUserCommand(55,
+								Integer.parseInt(numberOfSteps.getText()));
+						setUndo(true);
+					} else
+						ViewUtilities.displayMessage(display, shell, "Error",
+								"Enter valid number as steps", SWT.ERROR);
+				} else
+					setStatusLabel("Missing number of steps");
+			}
 		}
 
 		public void widgetDefaultSelected(SelectionEvent event) {
@@ -706,6 +741,13 @@ public class GeneralView extends Observable implements View, Runnable {
 
 	@Override
 	public void disableUndo() {
-		undo.setEnabled(false);
+		display.asyncExec(new Runnable() {
+
+			@Override
+			public void run() {
+				undo.setEnabled(false);
+			}
+		});
+
 	}
 }
