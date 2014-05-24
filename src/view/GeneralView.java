@@ -40,7 +40,7 @@ public class GeneralView extends Observable implements View, Runnable {
 			fileExitItem, fileSaveItem, fileLoadItem, helpGetHelpItem;
 	private Label label, scorevalue, bestscorevalue;
 	private Board board = null;
-	private Button undo, saveGame, loadGame, newgame;
+	private Button undo, saveGame, loadGame, newgame, hint;
 	private Display display;
 	private Shell shell;
 	private Composite contentPanel;
@@ -49,7 +49,7 @@ public class GeneralView extends Observable implements View, Runnable {
 	private GameMazeBoard gMazeb;
 	private Point s, d;
 	private int userCommand, mazeDoubleClick = 0;
-	boolean newGame = false, keyPressed = false;
+	boolean newGame = false, keyPressed = false, optionScreenOpened = false;
 	private Listener mouseDown2048, mouseUp2048, keyUp2048, keyDown2048,
 			keyDownMaze, keyUpMaze;
 	private OptionScreen optinsScr;
@@ -116,23 +116,24 @@ public class GeneralView extends Observable implements View, Runnable {
 	}
 
 	private void mouseMovement() {
-		// If we're not staying in the same place == if we moved
-		if ((s.x - d.x) != 0 || (s.y - d.y) != 0) {
-			// Calculate the degree
-			Double degree = Math.toDegrees(Math.asin((s.y - d.y)
-					/ Math.pow(
-							(Math.pow(s.x - d.x, 2) + Math.pow(s.y - d.y, 2)),
-							0.5)));
+		if (!optionScreenOpened) {
+			// If we're not staying in the same place == if we moved
+			if ((s.x - d.x) != 0 || (s.y - d.y) != 0) {
+				// Calculate the degree
+				Double degree = Math.toDegrees(Math.asin((s.y - d.y)
+						/ Math.pow((Math.pow(s.x - d.x, 2) + Math.pow(
+								s.y - d.y, 2)), 0.5)));
 
-			// Calculate the way
-			int way = 0;
-			// If we moved from right to left way will be negative
-			if (s.x > d.x)
-				way = -1;
-			// Else positive
-			else
-				way = 1;
-			ConvertToMove(degree, way);
+				// Calculate the way
+				int way = 0;
+				// If we moved from right to left way will be negative
+				if (s.x > d.x)
+					way = -1;
+				// Else positive
+				else
+					way = 1;
+				ConvertToMove(degree, way);
+			}
 		}
 	}
 
@@ -405,11 +406,11 @@ public class GeneralView extends Observable implements View, Runnable {
 		loadGame.addSelectionListener(new LoadItemListener());
 		loadGame.setEnabled(true);
 
-		Button hint = new Button(shell, SWT.BUTTON1);
+		hint = new Button(shell, SWT.BUTTON1);
 		hint.setText("Hint");
 		hint.setLayoutData(buttonGrid);
 		hint.addSelectionListener(new HintItemListener());
-		hint.setEnabled(true);
+		hint.setEnabled(false);
 
 		label = new Label(shell, SWT.CENTER);
 		label.setBounds(shell.getClientArea());
@@ -462,12 +463,20 @@ public class GeneralView extends Observable implements View, Runnable {
 	}
 
 	@Override
-	public void setUndo(boolean state) {
-		undo.setEnabled(state);
+	public void setUndo(final boolean state) {
+		display.asyncExec(new Runnable() {
+			
+			@Override
+			public void run() {
+				undo.setEnabled(state);
+			}
+		});
 	}
 
 	private void GameSelection() {
+		optionScreenOpened = true;
 		SelectedGame = optinsScr.open();
+		optionScreenOpened = false;
 		if (!SelectedGame.equals("Empty")) {
 			switch (SelectedGame) {
 			case "Maze":
@@ -500,9 +509,13 @@ public class GeneralView extends Observable implements View, Runnable {
 				break;
 			}
 			Difficulty = optinsScr.getDifficulty();
-			setUserCommand(15,Difficulty);
-			if (optinsScr.getSolverServerAddress() != "")
-				setUserCommand(17, optinsScr.getSolverServerAddress());
+			setUserCommand(15, Difficulty);
+			if (optinsScr.serverEnabled()){
+				setUserCommand(17, optinsScr.getServerProperties());
+				optinsScr.getServerProperties().Print();
+				hint.setEnabled(true);}
+			else
+				hint.setEnabled(false);
 		}
 	}
 
@@ -672,6 +685,6 @@ public class GeneralView extends Observable implements View, Runnable {
 
 	@Override
 	public void disableUndo() {
-		undo.setEnabled(false);		
+		undo.setEnabled(false);
 	}
 }

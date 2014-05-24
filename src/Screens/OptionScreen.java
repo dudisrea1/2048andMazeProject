@@ -1,5 +1,11 @@
 package Screens;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import model.ServerProperties;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
@@ -11,9 +17,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -21,19 +25,15 @@ import org.eclipse.swt.widgets.Text;
 public class OptionScreen extends Dialog {
 	private String difficulty = "Normal", SelectedGame = "Empty",
 			SolverServerAddress = "127.0.0.1";
-	private boolean sound = false;
+	private boolean sound = false, serverEnabled = false;
 	private int methodSelection = 0, portNumber = 5001, depth = 6;
 	private Group GamesGroup, DifficultyGroup, SoundGroup, ServerGroup;
 	private Button GameMaze_btn, Game2048_btn, normal, hard, on, off, OK_btn;
 	private Text SolverServerAddress_text, SolverServerDepth, SolverServerPort;
 	private Combo solverMethod;
 
-	public OptionScreen(Shell parent, int style) {
-		super(parent, style);
-	}
-
 	public OptionScreen(Shell parent) {
-		this(parent, 0);
+		super(parent, 0);
 	}
 
 	/**
@@ -47,8 +47,11 @@ public class OptionScreen extends Dialog {
 		on.setSelection(sound);
 		off.setSelection(!sound);
 		SolverServerAddress_text.setText(SolverServerAddress);
-		if(portNumber >=1)
-			SolverServerPort.setText(new String(""+portNumber));
+		if (portNumber >= 1)
+			SolverServerPort.setText(new String("" + portNumber));
+		else
+			// Displays the default port used
+			SolverServerPort.setText(new String("" + 5001));
 	}
 
 	/**
@@ -65,20 +68,20 @@ public class OptionScreen extends Dialog {
 		optinsScreen_shell.setText("Options");
 
 		optinsScreen_shell.addKeyListener(new KeyListener() {
-			
+
 			@Override
 			public void keyReleased(KeyEvent arg0) {
 				System.out.println(arg0.keyCode);
-				
+
 			}
-			
+
 			@Override
 			public void keyPressed(KeyEvent arg0) {
 				System.out.println(arg0.keyCode);
-				
+
 			}
 		});
-		
+
 		GamesGroup = new Group(optinsScreen_shell, SWT.SHADOW_OUT);
 		GamesGroup.setText("Choose Game:");
 		GamesGroup.setLayout(new GridLayout(2, true));
@@ -154,22 +157,22 @@ public class OptionScreen extends Dialog {
 		solverMethodtext.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
 				true, 1, 1));
 		solverMethodtext.setText("Choose Method");
-		solverMethod = new Combo(ServerGroup, SWT.BORDER);
+		solverMethod = new Combo(ServerGroup, SWT.READ_ONLY);
 		solverMethod.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true,
 				1, 1));
 		solverMethod.setItems(new String[] { "Minimax", "Alpha-Beta",
 				"Expectimax" });
 		solverMethod.select(methodSelection);
-		
+
 		Text solverDepthtext = new Text(ServerGroup, SWT.NONE);
 		solverDepthtext.setEditable(false);
 		solverDepthtext.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
 				true, 1, 1));
 		solverDepthtext.setText("Choose Depth");
-		SolverServerDepth= new Text(ServerGroup, SWT.BORDER);
-		SolverServerDepth.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true,
-				1, 1));
-		SolverServerDepth.setText(""+depth);
+		SolverServerDepth = new Text(ServerGroup, SWT.BORDER);
+		SolverServerDepth.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
+				true, 1, 1));
+		SolverServerDepth.setText("" + depth);
 
 		OK_btn = new Button(optinsScreen_shell, SWT.PUSH);
 		OK_btn.setText("OK");
@@ -184,7 +187,6 @@ public class OptionScreen extends Dialog {
 					GameMaze_btn.setSelection(true);
 				} else if (Game2048_btn.getSelection()) {
 					SelectedGame = "2048";
-					GameMaze_btn.setSelection(false);
 					Game2048_btn.setSelection(true);
 				}
 				setSound(on.getSelection());
@@ -193,13 +195,70 @@ public class OptionScreen extends Dialog {
 				} else {
 					setDifficulty("Hard");
 				}
-				SolverServerAddress = SolverServerAddress_text.getText();
-				methodSelection = solverMethod.getSelectionIndex();
-				if (verifyPort(SolverServerPort.getText())) {
+				String missing = "";
+				if (SolverServerAddress_text.getText().isEmpty()) {
+					SolverServerAddress = "";
+					missing += ", IP Address";
+				}
+				if (SolverServerPort.getText().isEmpty())
+					missing += ", Port";
+				if (SolverServerDepth.getText().isEmpty())
+					missing += ", Depth";
+
+				if (SelectedGame.equals("Maze")) {
+					serverEnabled = false;
+					displayMessage(
+							optinsScreen_shell,
+							"Maze game",
+							"Hints are not supported in Maze Game, Good luck :)",
+							SWT.ICON_INFORMATION);
 					optinsScreen_shell.dispose();
-				} else {
-					displayMessage(optinsScreen_shell,
-							"Port is not valid", SWT.ERROR);
+				}
+
+				if (!optinsScreen_shell.isDisposed() && !missing.isEmpty()) {
+					serverEnabled = false;
+					displayMessage(
+							optinsScreen_shell,
+							"Missing Server Parameters",
+							"Hint will be disabled since "
+									+ missing.substring(2)
+									+ " parameters are missing.",
+							SWT.ICON_INFORMATION);
+					optinsScreen_shell.dispose();
+				}
+
+				if (!optinsScreen_shell.isDisposed()) {
+					String invalid = "";
+					methodSelection = solverMethod.getSelectionIndex();
+					if (VerifyAddress(SolverServerAddress_text.getText()))
+						SolverServerAddress = SolverServerAddress_text
+								.getText();
+					else
+						invalid += "Invalid IP address, must be X.X.X.X where x between 0-255.\n";
+					portNumber = verifyNumberInRange(
+							SolverServerPort.getText(), 1, 65535);
+					if (portNumber == -1)
+						invalid += "Invalid Port number, must be number between 1-65535.\n";
+					depth = verifyNumberInRange(SolverServerDepth.getText(), 1,
+							15);
+					if (depth == -1)
+						invalid += "Invalid Depth chosen, must be a number between 1-15.";
+					if (invalid.isEmpty()) {
+						if (depth >= 7)
+							displayMessage(
+									optinsScreen_shell,
+									"Depth is high",
+									"You choose depth "
+											+ depth
+											+ ", this is a high number and will take time to calculate each step ",
+									SWT.ICON_INFORMATION);
+						serverEnabled = true;
+						optinsScreen_shell.dispose();
+					}
+
+					else
+						displayMessage(optinsScreen_shell,
+								"Invalid Parameters given", invalid, SWT.ERROR);
 				}
 			}
 
@@ -228,6 +287,34 @@ public class OptionScreen extends Dialog {
 	 */
 	public String getSolverServerAddress() {
 		return SolverServerAddress;
+	}
+
+	/**
+	 * Holds the solver server Port
+	 * 
+	 * @return Port number or -1 if port was not set
+	 */
+	public int getSolverPort() {
+		return portNumber;
+	}
+
+	/**
+	 * Holds the solver method that was chosen
+	 * 
+	 * @return number that represents the method 0 - Minimax 1 - Alpha-Beta 2 -
+	 *         Expectimax
+	 */
+	public int getSolverMethod() {
+		return methodSelection;
+	}
+
+	/**
+	 * Holds the solver depth that was used
+	 * 
+	 * @return the depth value
+	 */
+	public int getSolverDepth() {
+		return depth;
 	}
 
 	/**
@@ -269,23 +356,31 @@ public class OptionScreen extends Dialog {
 	}
 
 	/**
+	 * Verifies that the given string is a valid number - contains only numbers
+	 * and between the range of min to max
 	 * 
+	 * @param number
+	 *            - the string that needs to be converted to number
+	 * @param min
+	 *            - the lowest possible value (included)
+	 * @param max
+	 *            - the highest possible value (included)
+	 * @return the String as int data type, -1 if the string is not a valid
+	 *         number
 	 */
-	private boolean verifyPort(String string) {
-		if(SolverServerPort.getText().isEmpty()){
-			portNumber = -1;
-			return true;}
-		char[] chars = new char[string.length()];
-		string.getChars(0, chars.length, chars, 0);
+
+	private int verifyNumberInRange(String number, int min, int max) {
+		char[] chars = new char[number.length()];
+		number.getChars(0, chars.length, chars, 0);
 		for (int i = 0; i < chars.length; i++) {
 			if (!('0' <= chars[i] && chars[i] <= '9')) {
-				return false;
+				return -1;
 			}
 		}
-		portNumber = Integer.parseInt(SolverServerPort.getText());
-		if (portNumber >= 1 && portNumber <= 65535)
-			return true;
-		return false;
+		int tmpNumber = Integer.parseInt(number);
+		if (tmpNumber >= min && tmpNumber <= max)
+			return tmpNumber;
+		return -1;
 	}
 
 	/**
@@ -296,10 +391,56 @@ public class OptionScreen extends Dialog {
 	 * @param event
 	 *            ie, event can be SWT.ERROR or SWT.ICON_INFORMATION
 	 */
-	public void displayMessage(Shell shell, String string, int event) {
+	public void displayMessage(Shell shell, String text, String message,
+			int event) {
 		MessageBox mb = new MessageBox(shell, event);
-		mb.setText("Error");
-		mb.setMessage(string);
+		mb.setText(text);
+		mb.setMessage(message);
 		mb.open();
 	}
+
+	/**
+	 * Returns true if the string input in address is a valid IPv4 or IPv6
+	 * 
+	 * @param IP
+	 *            - the IP address to verify
+	 * @return boolean
+	 */
+	private boolean VerifyAddress(String ipAddress) {
+		Pattern VALID_IPV4_PATTERN = null;
+		Pattern VALID_IPV6_PATTERN = null;
+		String ipv4Pattern = "(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
+		String ipv6Pattern = "([0-9a-f]{1,4}:){7}([0-9a-f]){1,4}";
+
+		try {
+			VALID_IPV4_PATTERN = Pattern.compile(ipv4Pattern,
+					Pattern.CASE_INSENSITIVE);
+			VALID_IPV6_PATTERN = Pattern.compile(ipv6Pattern,
+					Pattern.CASE_INSENSITIVE);
+		} catch (PatternSyntaxException e) {
+			e.printStackTrace();
+		}
+		Matcher m1 = VALID_IPV4_PATTERN.matcher(ipAddress);
+		if (m1.matches()) {
+			return true;
+		}
+		Matcher m2 = VALID_IPV6_PATTERN.matcher(ipAddress);
+		return m2.matches();
+	}
+
+	/**
+	 * Holds the flag regarding server solvement
+	 * 
+	 * @return true if it has all needed parameters - valid IP,Port,Method and
+	 *         Depth, else returns false
+	 */
+	public boolean serverEnabled() {
+		return serverEnabled;
+	}
+
+	public ServerProperties getServerProperties() {
+		return new ServerProperties(SolverServerAddress, portNumber,
+				methodSelection, depth);
+	}
+
 }

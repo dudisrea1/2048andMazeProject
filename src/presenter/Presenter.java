@@ -3,9 +3,9 @@ package presenter;
 import java.util.Observable;
 import java.util.Observer;
 
-import model.GeneralModel;
 import model.Model;
 import model.ModelMovements;
+import model.ServerProperties;
 import view.View;
 import Game2048.Game2048Model;
 import GameMaze.GameMazeModel;
@@ -16,7 +16,6 @@ public class Presenter implements Observer {
 	ModelMovements mvGeneral, mv2048, mvMaze;
 	Game2048Model g2048;
 	GameMazeModel gMaze;
-	private int depth = 7;
 
 	/**
 	 * Constructor that builds the presenter
@@ -28,10 +27,8 @@ public class Presenter implements Observer {
 	 */
 	public Presenter(Model model, View ui) {
 		this.ui = ui;
-//		this.model = new GeneralModel();
 		g2048 = new Game2048Model();
 		mv2048 = new ModelMovements(g2048);
-		mvGeneral = null;
 		gMaze = new GameMazeModel();
 		mvMaze = new ModelMovements(gMaze);
 
@@ -70,14 +67,13 @@ public class Presenter implements Observer {
 					ui.setUndo(model.getMoves().size() != 0);
 				}
 				break;
+			// Changes the difficulty
 			case 15:
 				model.setDifficulty(arg1.toString());
 				break;
-//			case 16:
-//				model.setDifficulty("Hard");
-//				break;
+			// Sets the client server properties
 			case 17:
-				model.setSolverServerAddress(arg1.toString());
+				model.setSolverServerProperties((ServerProperties)arg1);
 				break;
 			// Changes the model to work with Specific game model.
 			// Set the model to work as Maze
@@ -116,8 +112,8 @@ public class Presenter implements Observer {
 			// Hint needed
 			case 55:
 				try {
-					if (!model.CheckEndOfGame()) {
-						Integer[] bestMove = model.GetBestMove(depth, 1);
+					if (model.CanAskServer() && !model.CheckEndOfGame()) {
+						Integer[] bestMove = model.GetBestMove();
 						if (bestMove != null && bestMove[0] != null
 								&& bestMove[1] != null && !ui.isShellDisposed()) {
 							ui.setStatusLabel(model.ArrayToString(bestMove));

@@ -115,13 +115,16 @@ public interface Model {
 	 * @param arg1 Normal or Hard difficulty
 	 */
 	void setDifficulty(String arg1);
-	void setSolverServerAddress(String IP);
-	
-	Integer[] GetBestMove(int depth,int method);
+
+	Integer[] GetBestMove();
 	
 	String GetErrorMessage();
 
 	boolean movement(int integer, int integer2);
 
 	String ArrayToString(Integer[] bestMove);
+
+	void setSolverServerProperties(ServerProperties arg1);
+
+	boolean CanAskServer();
 }

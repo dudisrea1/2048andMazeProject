@@ -11,21 +11,18 @@ import java.util.Stack;
 
 import model.ClientRequest;
 import model.Model;
+import model.ServerProperties;
 import Converter.Game2048XMLManager;
 
 public class Game2048Model extends Observable implements Model, Serializable {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 6529685098267757690L;
-	// private int[][] board;
-	// private int score = 0, bestscore = 0;
 	private int N = 4;
 	private Board2048 board;
 	private int bestscore = 0;
 	public Stack<Board2048> undo;
-	private String difficulty = "Normal", solverServerAddress = "",
+	private String difficulty = "Normal",
 			ErrorMessage = "";
+	private ServerProperties sp = null;
 	private boolean gameover = false;
 	private Game2048XMLManager Game2048ModelXMLManager = new Game2048XMLManager();
 
@@ -608,10 +605,10 @@ public class Game2048Model extends Observable implements Model, Serializable {
 	}
 
 	@Override
-	public Integer[] GetBestMove(int depth, int method) {
+	public Integer[] GetBestMove() {
 		try {
 			System.out.println("client side");
-			Socket myServer = new Socket(solverServerAddress, 5001);
+			Socket myServer = new Socket(sp.getSolverServerAddress(), sp.getSolverServerPort());
 			System.out.println("connected to server");
 
 			ObjectOutputStream out2server = new ObjectOutputStream(
@@ -620,11 +617,8 @@ public class Game2048Model extends Observable implements Model, Serializable {
 					myServer.getInputStream());
 
 			System.out.println("sending to server: ");
-
-			// Game2048Model gModel = new Game2048Model(getBoards());
-			// gModel.InitBoard();
-			out2server.writeObject(new ClientRequest(getBoards(), depth,
-					method, this));
+			out2server.writeObject(new ClientRequest(getBoards(), sp.getSolverServerDepth(),
+					sp.getSolverServerMethod(), this));
 			out2server.flush();
 			Integer[] movement = (Integer[]) inFromServer.readObject();
 			System.out.println(movement + "get: " + movement[0] + ","
@@ -643,14 +637,19 @@ public class Game2048Model extends Observable implements Model, Serializable {
 		}
 	}
 
-	@Override
-	public void setSolverServerAddress(String IP) {
-		solverServerAddress = IP;
-
+	public boolean CanAskServer(){
+		if(sp == null)
+			return false;
+		return true;
 	}
-
+	
 	@Override
 	public String GetErrorMessage() {
 		return ErrorMessage;
+	}
+
+	@Override
+	public void setSolverServerProperties(ServerProperties arg1) {
+		this.sp = new ServerProperties(arg1);
 	}
 }

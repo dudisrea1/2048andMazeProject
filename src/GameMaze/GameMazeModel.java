@@ -4,6 +4,7 @@ import java.util.Observable;
 import java.util.Stack;
 
 import model.Model;
+import model.ServerProperties;
 import Converter.GameMazeXMLManager;
 
 public class GameMazeModel extends Observable implements Model {
@@ -15,7 +16,8 @@ public class GameMazeModel extends Observable implements Model {
 	private int score, bestScore = 0;
 	private Stack<Integer[]> MovesStack = new Stack<Integer[]>();
 	private GameMazeXMLManager GameMazeModelXMLManager = new GameMazeXMLManager();
-	private String ErrorMessage="";
+	private String ErrorMessage = "";
+	private ServerProperties sp = null;
 
 	public GameMazeModel() {
 		MazeRows = 10;
@@ -381,7 +383,6 @@ public class GameMazeModel extends Observable implements Model {
 			return false;
 	}
 
-
 	@Override
 	public int getBestScore() {
 		return bestScore;
@@ -444,18 +445,6 @@ public class GameMazeModel extends Observable implements Model {
 	}
 
 	@Override
-	public Integer[] GetBestMove(int depth,int method) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setSolverServerAddress(String IP) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public String GetErrorMessage() {
 		return ErrorMessage;
 	}
@@ -470,6 +459,25 @@ public class GameMazeModel extends Observable implements Model {
 	public String ArrayToString(Integer[] bestMove) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void setSolverServerProperties(ServerProperties arg1) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Integer[] GetBestMove() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean CanAskServer() {
+		if(sp == null)
+			return false;
+		return true;
 	}
 
 }
