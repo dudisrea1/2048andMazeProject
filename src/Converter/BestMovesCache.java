@@ -53,6 +53,7 @@ public class BestMovesCache {
 				buff.append(line);
 			}
 
+			@SuppressWarnings("unchecked")
 			HashMap<String, String> LoadedMap = (HashMap<String, String>) xstream
 					.fromXML(buff.toString());
 			br.close();

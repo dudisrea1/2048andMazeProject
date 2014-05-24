@@ -12,7 +12,7 @@ import GameMaze.GameMazeModel;
 
 public class Presenter implements Observer {
 	View ui;
-	Model model;
+	Model model = null;
 	ModelMovements mvGeneral, mv2048, mvMaze;
 	Game2048Model g2048;
 	GameMazeModel gMaze;
@@ -28,7 +28,7 @@ public class Presenter implements Observer {
 	 */
 	public Presenter(Model model, View ui) {
 		this.ui = ui;
-		this.model = new GeneralModel();
+//		this.model = new GeneralModel();
 		g2048 = new Game2048Model();
 		mv2048 = new ModelMovements(g2048);
 		mvGeneral = null;
@@ -71,18 +71,18 @@ public class Presenter implements Observer {
 				}
 				break;
 			case 15:
-				model.setDifficulty("Normal");
+				model.setDifficulty(arg1.toString());
 				break;
-			case 16:
-				model.setDifficulty("Hard");
-				break;
+//			case 16:
+//				model.setDifficulty("Hard");
+//				break;
 			case 17:
 				model.setSolverServerAddress(arg1.toString());
 				break;
 			// Changes the model to work with Specific game model.
 			// Set the model to work as Maze
 			case 100:
-				if (model.getClass() != GameMazeModel.class) {
+				if (model == null || model.getClass() != GameMazeModel.class) {
 					g2048.deleteObserver(this);
 					gMaze.addObserver(this);
 					model = gMaze;
@@ -99,7 +99,7 @@ public class Presenter implements Observer {
 			// Changes the model to work with Specific game model.
 			// Set the model to work as Game2048
 			case 200:
-				if (model.getClass() != Game2048Model.class) {
+				if (model == null || model.getClass() != Game2048Model.class) {
 					gMaze.deleteObserver(this);
 					g2048.addObserver(this);
 					model = g2048;
@@ -116,17 +116,15 @@ public class Presenter implements Observer {
 			// Hint needed
 			case 55:
 				try {
-					// Integer[] bestMove =
-					// AIsolver.findBestMove(g2048.getBoards(), depth, 1);
-					if (!g2048.CheckEndOfGame()) {
+					if (!model.CheckEndOfGame()) {
 						Integer[] bestMove = model.GetBestMove(depth, 1);
 						if (bestMove != null && bestMove[0] != null
 								&& bestMove[1] != null && !ui.isShellDisposed()) {
-							ui.setStatusLabel(g2048.ArrayToString(bestMove));
-							g2048.movement(bestMove[0], bestMove[1]);
+							ui.setStatusLabel(model.ArrayToString(bestMove));
+							model.movement(bestMove[0], bestMove[1]);
 							System.out.println(bestMove[0] + "," + bestMove[1]);
 						}
-					} else if (g2048.CheckEndOfGame() || !ui.isShellDisposed())
+					} else if (model.CheckEndOfGame() || !ui.isShellDisposed())
 						ui.setStatusLabel("No more moves");
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -138,7 +136,7 @@ public class Presenter implements Observer {
 				break;
 			}
 			// If the notification received from other source (model) will
-			// redesplay the board, score, bestscore, checks if there's no more
+			// redisplay the board, score, bestscore, checks if there's no more
 			// moves and end the game if true
 		} else {// if (arg0 instanceof Game2048Model) {
 			if (!ui.isShellDisposed()) {
@@ -153,7 +151,8 @@ public class Presenter implements Observer {
 				if (model.CheckEndOfGame()) {
 					ui.EndOfGame();
 				}
-
+				if(model.getMoves().size()==0)
+					ui.disableUndo();
 			}
 		}
 	}

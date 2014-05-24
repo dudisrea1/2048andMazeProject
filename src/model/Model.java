@@ -2,8 +2,6 @@ package model;
 
 import java.util.Stack;
 
-import Game2048.Board2048;
-
 public interface Model {
 
 	void moveUp();
@@ -76,6 +74,7 @@ public interface Model {
 	 * 
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	Stack getMoves();
 
 	/**
@@ -83,6 +82,7 @@ public interface Model {
 	 * 
 	 * @param moves
 	 */
+	@SuppressWarnings("rawtypes")
 	void setMoves(Stack moves);
 
 	/**
@@ -120,4 +120,8 @@ public interface Model {
 	Integer[] GetBestMove(int depth,int method);
 	
 	String GetErrorMessage();
+
+	boolean movement(int integer, int integer2);
+
+	String ArrayToString(Integer[] bestMove);
 }

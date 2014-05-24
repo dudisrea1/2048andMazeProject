@@ -3,7 +3,6 @@ package GameMaze;
 import java.util.Observable;
 import java.util.Stack;
 
-import model.GeneralBoardInterface;
 import model.Model;
 import Converter.GameMazeXMLManager;
 
@@ -66,6 +65,7 @@ public class GameMazeModel extends Observable implements Model {
 	 * @param BestScore
 	 * @param MovesStack
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public GameMazeModel(int[][] Board, int CurrentStateColumn,
 			int CurrentStateRow, int Score, int BestScore, Stack MovesStack) {
 		MazeRows = 10;
@@ -430,6 +430,7 @@ public class GameMazeModel extends Observable implements Model {
 		return true;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void setMoves(Stack moves) {
 		this.MovesStack = moves;
@@ -457,6 +458,18 @@ public class GameMazeModel extends Observable implements Model {
 	@Override
 	public String GetErrorMessage() {
 		return ErrorMessage;
+	}
+
+	@Override
+	public boolean movement(int integer, int integer2) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public String ArrayToString(Integer[] bestMove) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

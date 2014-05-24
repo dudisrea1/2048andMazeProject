@@ -95,12 +95,14 @@ public class GeneralModel extends Observable implements Model {
 
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public Stack getMoves() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void setMoves(Stack moves) {
 		// TODO Auto-generated method stub
@@ -151,6 +153,18 @@ public class GeneralModel extends Observable implements Model {
 
 	@Override
 	public String GetErrorMessage() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean movement(int integer, int integer2) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public String ArrayToString(Integer[] bestMove) {
 		// TODO Auto-generated method stub
 		return null;
 	}

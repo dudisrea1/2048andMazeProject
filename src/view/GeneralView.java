@@ -2,9 +2,11 @@ package view;
 
 import java.util.HashMap;
 import java.util.Observable;
+
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.StackLayout;
@@ -466,53 +468,50 @@ public class GeneralView extends Observable implements View, Runnable {
 
 	private void GameSelection() {
 		SelectedGame = optinsScr.open();
-		switch (SelectedGame) {
-		case "Maze":
-			if (board instanceof Game2048Board || board == null) {
-				display.removeFilter(SWT.MouseUp, mouseUp2048);
-				display.removeFilter(SWT.MouseDown, mouseDown2048);
-				display.removeFilter(SWT.KeyDown, keyDown2048);
-				display.removeFilter(SWT.KeyUp, keyUp2048);
-				display.addFilter(SWT.KeyDown, keyDownMaze);
-				display.addFilter(SWT.KeyUp, keyUpMaze);
-				layout.topControl = gMazeb;
-				contentPanel.layout();
-				board = gMazeb;
-				setUserCommand(100);
+		if (!SelectedGame.equals("Empty")) {
+			switch (SelectedGame) {
+			case "Maze":
+				if (board instanceof Game2048Board || board == null) {
+					display.removeFilter(SWT.MouseUp, mouseUp2048);
+					display.removeFilter(SWT.MouseDown, mouseDown2048);
+					display.removeFilter(SWT.KeyDown, keyDown2048);
+					display.removeFilter(SWT.KeyUp, keyUp2048);
+					display.addFilter(SWT.KeyDown, keyDownMaze);
+					display.addFilter(SWT.KeyUp, keyUpMaze);
+					layout.topControl = gMazeb;
+					contentPanel.layout();
+					board = gMazeb;
+					setUserCommand(100);
+				}
+				break;
+			case "2048":
+				if (board instanceof GameMazeBoard || board == null) {
+					display.removeFilter(SWT.KeyDown, keyDownMaze);
+					display.removeFilter(SWT.KeyUp, keyUpMaze);
+					display.addFilter(SWT.KeyUp, keyUp2048);
+					display.addFilter(SWT.KeyDown, keyDown2048);
+					display.addFilter(SWT.MouseUp, mouseUp2048);
+					display.addFilter(SWT.MouseDown, mouseDown2048);
+					layout.topControl = g2048b;
+					contentPanel.layout();
+					board = g2048b;
+					setUserCommand(200);
+				}
+				break;
 			}
-			break;
-		case "2048":
-			if (board instanceof GameMazeBoard || board == null) {
-				display.removeFilter(SWT.KeyDown, keyDownMaze);
-				display.removeFilter(SWT.KeyUp, keyUpMaze);
-				display.addFilter(SWT.KeyUp, keyUp2048);
-				display.addFilter(SWT.KeyDown, keyDown2048);
-				display.addFilter(SWT.MouseUp, mouseUp2048);
-				display.addFilter(SWT.MouseDown, mouseDown2048);
-				layout.topControl = g2048b;
-				contentPanel.layout();
-				board = g2048b;
-				setUserCommand(200);
-			}
-			break;
-		}
-		if (!(optinsScr.getDifficulty().equals(Difficulty))) {
 			Difficulty = optinsScr.getDifficulty();
-			if (optinsScr.getDifficulty().equals("Normal"))
-				setUserCommand(15);
-			else
-				setUserCommand(16);
+			setUserCommand(15,Difficulty);
+			if (optinsScr.getSolverServerAddress() != "")
+				setUserCommand(17, optinsScr.getSolverServerAddress());
 		}
-		if(optinsScr.getSolverServerAddress()!="")
-			setUserCommand(17,optinsScr.getSolverServerAddress());
 	}
 
 	private boolean StartGame() {
 		undo.setEnabled(false);
-		if (SelectedGame.equals("Empty")) {
+		if (SelectedGame == null || SelectedGame.equals("Empty")) {
 			GameSelection();
 		}
-		if (!SelectedGame.equals("Empty")) {
+		if (SelectedGame != null && !SelectedGame.equals("Empty")) {
 			newGame = true;
 			saveGame.setEnabled(true);
 			return true;
@@ -537,7 +536,6 @@ public class GeneralView extends Observable implements View, Runnable {
 			if (StartGame()) {
 				label.setText("New " + SelectedGame + " Game");
 				setUserCommand(9);
-				// newGame = false;
 			}
 		}
 
@@ -618,6 +616,7 @@ public class GeneralView extends Observable implements View, Runnable {
 				loadFileDialog.setFileName("Game.xml");
 				loadFileDialog.setFilterExtensions(filterExtension);
 				setUserCommand(12, loadFileDialog.open());
+				label.setText("Loaded Game");
 			} else
 				label.setText("Missing Game Selection");
 		}
@@ -669,5 +668,10 @@ public class GeneralView extends Observable implements View, Runnable {
 	@Override
 	public boolean isShellDisposed() {
 		return shell.isDisposed();
+	}
+
+	@Override
+	public void disableUndo() {
+		undo.setEnabled(false);		
 	}
 }

@@ -3,7 +3,6 @@ package Game2048;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Observable;
@@ -11,7 +10,6 @@ import java.util.Random;
 import java.util.Stack;
 
 import model.ClientRequest;
-import model.GeneralBoardInterface;
 import model.Model;
 import Converter.Game2048XMLManager;
 
@@ -500,6 +498,7 @@ public class Game2048Model extends Observable implements Model, Serializable {
 	 * @param moves
 	 *            - new stack with the old moves
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void setMoves(Stack moves) {
 		undo = moves;

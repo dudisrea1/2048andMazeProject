@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.OutputStreamWriter;
-import java.io.Serializable;
 
 import model.Model;
 import Game2048.Game2048Model;
@@ -12,7 +11,7 @@ import Game2048.Game2048Model;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
 
-public class Game2048XMLManager implements ObjectManager,Serializable {
+public class Game2048XMLManager implements ObjectManager {
 
 	@Override
 	public boolean ToFile(Model object, String FileName) {

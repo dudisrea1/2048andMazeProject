@@ -10,4 +10,5 @@ public interface View {
 	void displayError(String string);
 	void setStatusLabel(String string);
 	boolean isShellDisposed();
+	void disableUndo();
 }
