@@ -137,7 +137,7 @@ public class OptionScreen extends Dialog {
 		Text serverAddress = new Text(ServerGroup, SWT.NONE);
 		serverAddress.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
 				true, 1, 1));
-		serverAddress.setEditable(false);
+		serverAddress.setEnabled(false);
 		serverAddress.setText("IP Address:");
 		SolverServerAddress_text = new Text(ServerGroup, SWT.BORDER);
 		SolverServerAddress_text.setLayoutData(new GridData(SWT.FILL, SWT.FILL,
@@ -146,14 +146,14 @@ public class OptionScreen extends Dialog {
 		Text serverPort = new Text(ServerGroup, SWT.NONE);
 		serverPort.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true,
 				1, 1));
-		serverPort.setEditable(false);
+		serverPort.setEnabled(false);
 		serverPort.setText("Port number:");
 		SolverServerPort = new Text(ServerGroup, SWT.BORDER);
 		SolverServerPort.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
 				true, 1, 1));
 
 		Text solverMethodtext = new Text(ServerGroup, SWT.NONE);
-		solverMethodtext.setEditable(false);
+		solverMethodtext.setEnabled(false);
 		solverMethodtext.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
 				true, 1, 1));
 		solverMethodtext.setText("Choose Method");
@@ -165,7 +165,7 @@ public class OptionScreen extends Dialog {
 		solverMethod.select(methodSelection);
 
 		Text solverDepthtext = new Text(ServerGroup, SWT.NONE);
-		solverDepthtext.setEditable(false);
+		solverDepthtext.setEnabled(false);
 		solverDepthtext.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true,
 				true, 1, 1));
 		solverDepthtext.setText("Choose Depth");

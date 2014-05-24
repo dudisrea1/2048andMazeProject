@@ -26,11 +26,6 @@ public class Game2048Model extends Observable implements Model, Serializable {
 	private boolean gameover = false;
 	private Game2048XMLManager Game2048ModelXMLManager = new Game2048XMLManager();
 
-	Socket myServer;
-	
-	ObjectOutputStream out2server;
-	ObjectInputStream inFromServer;
-
 	/**
 	 * The default constructor of the model will create a 4X4 board
 	 */
@@ -139,7 +134,7 @@ public class Game2048Model extends Observable implements Model, Serializable {
 				setBestScore(bestscore);
 				GameOver();
 				setChanged();
-				notifyObservers(ArrayToString(new Integer[]{dx,dy}));
+				notifyObservers();
 				return true;
 			} else
 				undo.pop();
@@ -609,22 +604,30 @@ public class Game2048Model extends Observable implements Model, Serializable {
 		return "No such move";
 	}
 
-	
+	@Override
 	public Integer[] GetBestMove() {
 		try {
-			myServer = new Socket(sp.getSolverServerAddress(), sp.getSolverServerPort());
-			int dept=sp.getSolverServerDepth();
-			int method=sp.getSolverServerMethod();
-			out2server = new ObjectOutputStream(myServer.getOutputStream());
-			inFromServer = new ObjectInputStream(myServer.getInputStream());
-				out2server.writeObject(new ClientRequest(getBoards(), dept,method, this));
-				out2server.flush();
-				Integer[] movement = (Integer[]) inFromServer.readObject();
-				System.out.println(movement + "get: " + movement[0] + ","+ movement[1]);
-			
-				CloseConnectionToServer();
+			System.out.println("client side");
+			Socket myServer = new Socket(sp.getSolverServerAddress(), sp.getSolverServerPort());
+			System.out.println("connected to server");
+
+			ObjectOutputStream out2server = new ObjectOutputStream(
+					myServer.getOutputStream());
+			ObjectInputStream inFromServer = new ObjectInputStream(
+					myServer.getInputStream());
+
+			System.out.println("sending to server: ");
+			out2server.writeObject(new ClientRequest(getBoards(), sp.getSolverServerDepth(),
+					sp.getSolverServerMethod(), this));
+			out2server.flush();
+			Integer[] movement = (Integer[]) inFromServer.readObject();
+			System.out.println(movement + "get: " + movement[0] + ","
+					+ movement[1]);
+
+			out2server.close();
+			myServer.close();
+
 			return movement;
-		
 		} catch (Exception e) {
 			ErrorMessage = e.getMessage();
 			setChanged();
@@ -634,29 +637,6 @@ public class Game2048Model extends Observable implements Model, Serializable {
 		}
 	}
 
-	@Override
-	public void DoBestMoves(final int MovesNnumber)
-	{
-		new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				for(int i=0;i<MovesNnumber  && !CheckEndOfGame();i++)
-				{
-					if (CanAskServer()) {
-						Integer[] bestMove = GetBestMove();
-						if (bestMove != null && bestMove[0] != null
-								&& bestMove[1] != null ){							
-							movement(bestMove[0], bestMove[1]);
-							System.out.println(bestMove[0] + "," + bestMove[1]);
-						}
-					} 
-				}
-				
-			}
-		}).run();
-		
-	}
 	public boolean CanAskServer(){
 		if(sp == null)
 			return false;
@@ -672,33 +652,9 @@ public class Game2048Model extends Observable implements Model, Serializable {
 	public void setSolverServerProperties(ServerProperties arg1) {
 		this.sp = new ServerProperties(arg1);
 	}
-	
+
 	@Override
-	public void OpenConnectionToServer()
-	{
-		try
-		{
-		myServer = new Socket(sp.getSolverServerAddress(), sp.getSolverServerPort());
-		
-		
-		}
-		catch(Exception e)
-		{
-			
-		}
-	}
-	@Override
-	public void CloseConnectionToServer()
-	{
-		try
-		{
-			if(!myServer.isClosed())
-			{			
-				inFromServer.close();
-				out2server.close();
-				myServer.close();
-			}
-		}
-		catch(Exception e){}
+	public int[][] getBoardArr() {
+		return board.getBoard();
 	}
 }

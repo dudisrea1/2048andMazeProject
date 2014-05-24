@@ -15,6 +15,8 @@ import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.FontMetrics;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
@@ -31,6 +33,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 import Screens.OptionScreen;
 
@@ -55,6 +58,7 @@ public class GeneralView extends Observable implements View, Runnable {
 	private OptionScreen optinsScr;
 	private String SelectedGame = "Empty", Difficulty = "Normal";
 	private HashMap<Integer, Integer> movementMap = new HashMap<Integer, Integer>();
+	private Text numberOfSteps;
 
 	@Override
 	public void displayBoard(int[][] data) {
@@ -277,8 +281,8 @@ public class GeneralView extends Observable implements View, Runnable {
 		display = Display.getDefault();
 		shell = new Shell(display);
 		shell.setLayout(new GridLayout(4, false));
-		shell.setSize(530, 530);
-		shell.setMinimumSize(530, 530);
+		shell.setSize(550, 530);
+		shell.setMinimumSize(550, 530);
 		shell.setText("Game 2048");
 		movementMap.put(0, 0);
 		movementMap.put(SWT.ARROW_UP, 1);
@@ -357,9 +361,16 @@ public class GeneralView extends Observable implements View, Runnable {
 
 	private void initButtonsandLabels() {
 
-		GridData scoresGrid = new GridData(SWT.FILL, SWT.FILL, true, false, 2,
+		// GridData scoresGrid = new GridData(SWT.FILL, SWT.FILL, true, false,
+		// 2,
+		// 1);
+		// GridData buttonGrid = new GridData(SWT.FILL, SWT.FILL, false, false,
+		// 1,
+		// 1);
+
+		GridData scoresGrid = new GridData(SWT.FILL, SWT.FILL, false, false, 2,
 				1);
-		GridData buttonGrid = new GridData(SWT.FILL, SWT.FILL, false, false, 1,
+		GridData buttonGrid = new GridData(SWT.FILL, SWT.FILL, false, false, 2,
 				1);
 
 		scorevalue = new Label(shell, SWT.FILL);
@@ -380,7 +391,7 @@ public class GeneralView extends Observable implements View, Runnable {
 		layout = new StackLayout();
 		contentPanel.setLayout(layout);
 		contentPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true,
-				3, 6));
+				2, 6));
 
 		g2048b = new Game2048Board(contentPanel, SWT.BORDER);
 		g2048b.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 3, 5));
@@ -406,9 +417,18 @@ public class GeneralView extends Observable implements View, Runnable {
 		loadGame.addSelectionListener(new LoadItemListener());
 		loadGame.setEnabled(true);
 
-		hint = new Button(shell, SWT.BUTTON1);
-		hint.setText("Hint");
-		hint.setLayoutData(buttonGrid);
+		Composite hintsGrp = new Composite(shell,SWT.NONE);
+		hintsGrp.setLayout(new GridLayout(2, true));
+		    
+		numberOfSteps = new Text(hintsGrp, SWT.BORDER);
+		numberOfSteps.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false,
+				false, 1, 1));
+		numberOfSteps.setText("");
+		numberOfSteps.setToolTipText("How many steps to calculate?");
+
+		hint = new Button(hintsGrp, SWT.BUTTON1);
+		hint.setText("Hints");
+		hint.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
 		hint.addSelectionListener(new HintItemListener());
 		hint.setEnabled(false);
 
@@ -429,6 +449,7 @@ public class GeneralView extends Observable implements View, Runnable {
 				display.sleep();
 			}
 		}
+		setUserCommand(-1);
 		display.dispose();
 	}
 
@@ -465,7 +486,7 @@ public class GeneralView extends Observable implements View, Runnable {
 	@Override
 	public void setUndo(final boolean state) {
 		display.asyncExec(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				undo.setEnabled(state);
@@ -510,11 +531,11 @@ public class GeneralView extends Observable implements View, Runnable {
 			}
 			Difficulty = optinsScr.getDifficulty();
 			setUserCommand(15, Difficulty);
-			if (optinsScr.serverEnabled()){
+			if (optinsScr.serverEnabled()) {
 				setUserCommand(17, optinsScr.getServerProperties());
 				optinsScr.getServerProperties().Print();
-				hint.setEnabled(true);}
-			else
+				hint.setEnabled(true);
+			} else
 				hint.setEnabled(false);
 		}
 	}

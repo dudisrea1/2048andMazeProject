@@ -116,7 +116,7 @@ public interface Model {
 	 */
 	void setDifficulty(String arg1);
 
-	
+	Integer[] GetBestMove();
 	
 	String GetErrorMessage();
 
@@ -127,12 +127,6 @@ public interface Model {
 	void setSolverServerProperties(ServerProperties arg1);
 
 	boolean CanAskServer();
-	
-	
-	
-	void DoBestMoves(int MovesNnumber);
-	
-	void OpenConnectionToServer();
-	
-	void CloseConnectionToServer();
+
+	int[][] getBoardArr();
 }

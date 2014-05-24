@@ -467,7 +467,12 @@ public class GameMazeModel extends Observable implements Model {
 
 	}
 
-	
+	@Override
+	public Integer[] GetBestMove() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	@Override
 	public boolean CanAskServer() {
 		if(sp == null)
@@ -476,23 +481,9 @@ public class GameMazeModel extends Observable implements Model {
 	}
 
 	@Override
-	public void DoBestMoves(int MovesNnumber) {
+	public int[][] getBoardArr() {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
-
-	@Override
-	public void OpenConnectionToServer() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void CloseConnectionToServer() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
 
 }
