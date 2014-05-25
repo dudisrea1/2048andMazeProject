@@ -618,6 +618,7 @@ public class Game2048Model extends Observable implements Model, Serializable {
 		}
 	}
 
+	@Override
 	public boolean CanAskServer() {
 		if (sp == null)
 			return false;

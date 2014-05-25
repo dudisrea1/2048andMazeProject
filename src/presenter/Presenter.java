@@ -52,7 +52,7 @@ public class Presenter implements Observer {
 					}
 				}
 				break;
-				// Starts a new Game
+			// Starts a new Game
 			case 9:
 				model.InitBoard();
 				break;
@@ -80,11 +80,16 @@ public class Presenter implements Observer {
 			// Sets the client server properties
 			case 17:
 				final ServerProperties sp = (ServerProperties) arg1;
+				// Opens a thread in order not to block the GUI
+				// Sets the serverSocket to work against, if the socket was used
+				// - close it before opening a new one
+				// if failed to connect display Error
+
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
 						try {
-							if(serverSocket!=null)
+							if (serverSocket != null)
 								serverSocket.close();
 							serverSocket = new Socket(sp
 									.getSolverServerAddress(), sp
@@ -143,11 +148,6 @@ public class Presenter implements Observer {
 			// moves and end the game if true
 		} else {
 			if (!ui.isShellDisposed()) {
-
-//				if (!model.GetErrorMessage().isEmpty()) // if model return an
-//														// error -
-//					// prompt it on view
-//					ui.displayError(model.GetErrorMessage());
 				ui.displayBoard(model.getBoard());
 				ui.displayScore(model.getScore());
 				ui.displayBestScore(model.getBestScore());

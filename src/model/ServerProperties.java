@@ -2,14 +2,28 @@ package model;
 
 import java.io.Serializable;
 
+/**
+ * Holds the server Properties IP Address, port number, method to use and depth
+ * of Solver algorithm
+ * 
+ */
 public class ServerProperties implements Serializable {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 2116984091812999593L;
 	private String SolverServerAddress;
 	private int SolverServerPort, SolverServerMethod, SolverServerDepth;
 
+	/**
+	 * Configures the ServerProperties
+	 * 
+	 * @param address
+	 *            - the server IP address
+	 * @param port
+	 *            - the server port
+	 * @param method
+	 *            - the method to use in order to solve the problem
+	 * @param depth
+	 *            - depth of lookup in these algorithms
+	 */
 	public ServerProperties(String address, int port, int method, int depth) {
 		SolverServerAddress = address;
 		SolverServerPort = port;

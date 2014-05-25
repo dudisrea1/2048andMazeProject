@@ -4,8 +4,6 @@ import helper.ViewUtilities;
 import model.ServerProperties;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -200,6 +198,9 @@ public class OptionScreen extends Dialog {
 		return SelectedGame;
 	}
 
+	/**
+	 * Handles invalid values for example invalid IP address, port or depth
+	 */
 	protected void HandleInvalidValues() {
 		if (!optinsScreen_shell.isDisposed()) {
 			String invalid = "";
@@ -238,6 +239,9 @@ public class OptionScreen extends Dialog {
 		}
 	}
 
+	/**
+	 * Handles missing values for example missing IP address, port or depth
+	 */
 	protected void HandleMissingValues() {
 		String missing = "";
 		if (SolverServerAddress_text.getText().isEmpty()) {
@@ -353,11 +357,22 @@ public class OptionScreen extends Dialog {
 		return serverEnabled;
 	}
 
+	/**
+	 * Holds the properties for the server as configured by the user
+	 * 
+	 * @return ServerProperties to be used by the presenter
+	 */
 	public ServerProperties getServerProperties() {
 		return new ServerProperties(SolverServerAddress, portNumber,
 				methodSelection, depth);
 	}
 
+	/**
+	 * Holds the changes in the option screen
+	 * 
+	 * @return if nothing changed return false, if the user changed something
+	 *         return true
+	 */
 	public boolean Changed() {
 		return changed;
 	}
