@@ -112,7 +112,7 @@ public class GeneralView extends Observable implements View, Runnable {
 
 	@Override
 	public void displayScore(final int score) {
-		display.asyncExec(new Runnable() {
+		display.syncExec(new Runnable() {
 
 			@Override
 			public void run() {
@@ -124,7 +124,7 @@ public class GeneralView extends Observable implements View, Runnable {
 
 	@Override
 	public void displayBestScore(final int score) {
-		display.asyncExec(new Runnable() {
+		display.syncExec(new Runnable() {
 
 			@Override
 			public void run() {
@@ -298,7 +298,7 @@ public class GeneralView extends Observable implements View, Runnable {
 		shell.setLayout(new GridLayout(4, false));
 		shell.setSize(580, 530);
 		shell.setMinimumSize(580, 530);
-		shell.setText("Game 2048");
+		shell.setText("Java Project");
 		movementMap.put(0, 0);
 		movementMap.put(SWT.ARROW_UP, 1);
 		movementMap.put(SWT.ARROW_DOWN, 2);
@@ -525,6 +525,7 @@ public class GeneralView extends Observable implements View, Runnable {
 			switch (SelectedGame) {
 			case "Maze":
 				if (board instanceof Game2048Board || board == null) {
+					shell.setText("Game Maze");
 					display.removeFilter(SWT.MouseUp, mouseUp2048);
 					display.removeFilter(SWT.MouseDown, mouseDown2048);
 					display.removeFilter(SWT.KeyDown, keyDown2048);
@@ -539,6 +540,7 @@ public class GeneralView extends Observable implements View, Runnable {
 				break;
 			case "2048":
 				if (board instanceof GameMazeBoard || board == null) {
+					shell.setText("Game 2048");
 					display.removeFilter(SWT.KeyDown, keyDownMaze);
 					display.removeFilter(SWT.KeyUp, keyUpMaze);
 					display.addFilter(SWT.KeyUp, keyUp2048);
@@ -556,7 +558,6 @@ public class GeneralView extends Observable implements View, Runnable {
 			setUserCommand(15, Difficulty);
 			if (optionsScr.serverEnabled()) {
 				setUserCommand(17, optionsScr.getServerProperties());
-				optionsScr.getServerProperties().Print();
 				hint.setEnabled(true);
 			} else
 				hint.setEnabled(false);

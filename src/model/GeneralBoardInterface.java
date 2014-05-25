@@ -17,7 +17,5 @@ public interface GeneralBoardInterface {
 	int getNumberOfEmptyCells();
 	List<Integer> getEmptyCellIds();
 	void setEmptyCell(int i, int j, int value);
-	int getBoardHash();
-	void Print();
-	
+	int getBoardHash();	
 }

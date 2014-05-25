@@ -1,5 +1,5 @@
-import model.Model;
 import presenter.Presenter;
+import model.Model;
 import view.GeneralView;
 
 /**

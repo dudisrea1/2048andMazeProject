@@ -579,13 +579,6 @@ public class Game2048Model extends Observable implements Model, Serializable {
 	}
 
 	/**
-	 * Print the board
-	 */
-	public void printCurrentBoard() {
-		this.board.Print();
-	}
-
-	/**
 	 * Returns the best move as string
 	 * 
 	 * @param bestMove
@@ -615,8 +608,6 @@ public class Game2048Model extends Observable implements Model, Serializable {
 					.getSolverServerDepth(), sp.getSolverServerMethod(), this));
 			out2server.flush();
 			Integer[] movement = (Integer[]) inFromServer.readObject();
-			System.out.println(movement + "get: " + movement[0] + ","
-					+ movement[1]);
 			return movement;
 		} catch (Exception e) {
 			ErrorMessage = e.getMessage();
@@ -651,7 +642,6 @@ public class Game2048Model extends Observable implements Model, Serializable {
 			public void run() {
 				for (int i = 0; i < arg1 && !CheckEndOfGame()
 						&& !myServer.isClosed(); i++) {
-					System.out.println(!myServer.isClosed());
 					Integer[] bestMove = GetBestMove(myServer);
 					if (bestMove != null && bestMove[0] != null
 							&& bestMove[1] != null) {

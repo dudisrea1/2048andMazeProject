@@ -55,10 +55,4 @@ public class ServerProperties implements Serializable {
 	public void setSolverServerDepth(int solverServerDepth) {
 		SolverServerDepth = solverServerDepth;
 	}
-
-	public void Print() {
-		System.out.println("Address: " + SolverServerAddress + "\n" + "Port: "
-				+ SolverServerPort + "\n" + "Method: " + SolverServerMethod
-				+ "\n" + "Depth: " + SolverServerDepth + "\n");
-	}
 }

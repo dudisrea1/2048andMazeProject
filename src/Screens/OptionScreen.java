@@ -64,21 +64,6 @@ public class OptionScreen extends Dialog {
 		optinsScreen_shell.setLayout(new GridLayout(1, true));
 		optinsScreen_shell.setText("Options");
 
-		optinsScreen_shell.addKeyListener(new KeyListener() {
-
-			@Override
-			public void keyReleased(KeyEvent arg0) {
-				System.out.println(arg0.keyCode);
-
-			}
-
-			@Override
-			public void keyPressed(KeyEvent arg0) {
-				System.out.println(arg0.keyCode);
-
-			}
-		});
-
 		GamesGroup = new Group(optinsScreen_shell, SWT.SHADOW_OUT);
 		GamesGroup.setText("Choose Game:");
 		GamesGroup.setLayout(new GridLayout(2, true));

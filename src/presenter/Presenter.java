@@ -51,6 +51,7 @@ public class Presenter implements Observer {
 					} catch (IOException e1) {
 					}
 				}
+				break;
 				// Starts a new Game
 			case 9:
 				model.InitBoard();

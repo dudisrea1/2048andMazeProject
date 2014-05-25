@@ -30,7 +30,6 @@ public class Game2048XMLManager implements ObjectManager,Serializable {
 			return true;
 
 		} catch (Exception exp) {
-			System.out.print(exp.toString());
 			return false;
 		}
 	}
