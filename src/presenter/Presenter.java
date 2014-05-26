@@ -41,7 +41,7 @@ public class Presenter implements Observer {
 	 * notifyObservers
 	 */
 	@Override
-	public void update(Observable arg0, Object arg1) {
+	public void update(Observable arg0, final Object arg1) {
 		if (arg0 == ui) {
 			switch (ui.getUserCommand()) {
 			case -1:
@@ -66,12 +66,19 @@ public class Presenter implements Observer {
 				break;
 			// Loads an existing model if given path
 			case 12:
-				if (model.Load((String) arg1)) {
-					ui.displayBoard(model.getBoard());
-					ui.displayScore(model.getScore());
-					ui.displayBestScore(model.getBestScore());
-					ui.setUndo(model.getMoves().size() != 0);
-				}
+				new Thread(new Runnable() {
+					
+					@Override
+					public void run() {
+						if (model.Load((String) arg1)) {
+							ui.displayBoard(model.getBoard());
+							ui.displayScore(model.getScore());
+							ui.displayBestScore(model.getBestScore());
+							ui.setUndo(model.getMoves().size() != 0);
+						}
+					}
+				});
+				
 				break;
 			// Changes the difficulty
 			case 15:

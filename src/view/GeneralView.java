@@ -621,7 +621,6 @@ public class GeneralView extends Observable implements View, Runnable {
 	class ExitItemListener implements SelectionListener {
 		public void widgetSelected(SelectionEvent event) {
 			shell.close();
-			display.dispose();
 		}
 
 		public void widgetDefaultSelected(SelectionEvent event) {
